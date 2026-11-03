@@ -25,7 +25,7 @@ módulo                                   Core
 
 1. Copie `internal/psy` para o seu projeto (ou use como referência). É a parte que não muda de um módulo para outro.
 2. Implemente `psy.Behavior`: `Emit(ctx, sink)` produz eventos até o contexto terminar, e `SetPaused` reflete `PAUSAR` e `RETOMAR`. O `emitter` do exemplo é o modelo.
-3. **Valide antes de enviar.** O `EventoGenerico` tem limites no contrato: tipo e chaves em `[a-z0-9._-]` (até 64 caracteres), até 32 atributos e valores de até 256 bytes; o `timestamp` pode estar até 5 minutos à frente da chegada. O Core rejeita o que violar (e conta). `emitter.Validate` confere tudo isso.
+3. **Valide antes de enviar.** O `EventoGenerico` tem limites no contrato: tipo e chaves em `[a-z0-9._-]` (até 64 caracteres), até 32 atributos e valores de até 256 bytes, UTF-8 válido e sem caracteres de controle (o valor chega ao alerta que o operador lê no terminal); o `timestamp` pode estar até 5 minutos à frente da chegada. O Core rejeita o que violar (e conta). `emitter.Validate` confere tudo isso.
 4. Monte em `main.go`: `psy.New(...).Run(ctx, comportamento)`.
 5. Dependa do contrato por tag: `go get github.com/psychoscope-io/psychoscope-proto@vX.Y.Z`.
 

@@ -10,6 +10,8 @@ import (
 	"regexp"
 	"sync/atomic"
 	"time"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/psychoscope-io/mod-example/internal/psy"
 	psychoscopev1 "github.com/psychoscope-io/psychoscope-proto/gen/go/psychoscope/v1"
@@ -30,10 +32,24 @@ const (
 	maxValueSize = 256
 )
 
+// printable informa se s e UTF-8 valido e sem caracteres de controle. O Core recusa o contrario: o valor
+// chega ao contexto dos alertas, que a CLI e a TUI mostram.
+func printable(s string) bool {
+	if !utf8.ValidString(s) {
+		return false
+	}
+	for _, r := range s {
+		if unicode.IsControl(r) {
+			return false
+		}
+	}
+	return true
+}
+
 var nameRe = regexp.MustCompile(`^[a-z0-9][a-z0-9._-]{0,63}$`)
 
-// Validate confere um evento contra os limites do contrato: tipo e chaves em [a-z0-9._-] (ate 64
-// caracteres), ate 32 atributos e valores de ate 256 bytes.
+// Validate confere um evento contra os limites que o Core aplica: tipo e chaves em [a-z0-9._-] (ate 64
+// caracteres), ate 32 atributos e valores de ate 256 bytes, UTF-8 valido e sem caracteres de controle.
 func Validate(g *psychoscopev1.EventoGenerico) error {
 	if !nameRe.MatchString(g.GetTipo()) {
 		return fmt.Errorf("tipo %q fora do formato do contrato", g.GetTipo())
@@ -47,6 +63,9 @@ func Validate(g *psychoscopev1.EventoGenerico) error {
 		}
 		if len(v) > maxValueSize {
 			return fmt.Errorf("valor de %q com %d bytes (maximo %d)", k, len(v), maxValueSize)
+		}
+		if !printable(v) {
+			return fmt.Errorf("valor de %q com caractere de controle ou UTF-8 invalido", k)
 		}
 	}
 	return nil

@@ -118,6 +118,10 @@ func TestValidateMatchesTheContractLimits(t *testing.T) {
 		{"32 atributos", &psychoscopev1.EventoGenerico{Tipo: "t", Atributos: attrs(32)}, true},
 		{"33 atributos", &psychoscopev1.EventoGenerico{Tipo: "t", Atributos: attrs(33)}, false},
 		{"valor com 256 bytes", &psychoscopev1.EventoGenerico{Tipo: "t", Atributos: map[string]string{"k": strings.Repeat("x", 256)}}, true},
+		{"valor com escape de terminal", &psychoscopev1.EventoGenerico{Tipo: "t", Atributos: map[string]string{"k": "\x1b[2Jx"}}, false},
+		{"valor com quebra de linha", &psychoscopev1.EventoGenerico{Tipo: "t", Atributos: map[string]string{"k": "a\nb"}}, false},
+		{"valor com UTF-8 invalido", &psychoscopev1.EventoGenerico{Tipo: "t", Atributos: map[string]string{"k": "a\xffb"}}, false},
+		{"valor com acentos", &psychoscopev1.EventoGenerico{Tipo: "t", Atributos: map[string]string{"k": "João"}}, true},
 		{"valor com 257 bytes", &psychoscopev1.EventoGenerico{Tipo: "t", Atributos: map[string]string{"k": strings.Repeat("x", 257)}}, false},
 	}
 	for _, c := range cases {

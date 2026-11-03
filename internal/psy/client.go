@@ -132,9 +132,11 @@ func (c *Client) session(ctx context.Context, b Behavior) error {
 	c.cfg.Log.Info("conectado ao Core", "socket", c.cfg.Socket)
 
 	sctx, cancel := context.WithCancel(ctx)
-	stop := context.AfterFunc(sctx, func() { _ = nc.Close() }) // destrava a leitura ao cancelar
+	context.AfterFunc(sctx, func() { _ = nc.Close() }) // destrava leitura e escrita ao cancelar
 	var wg sync.WaitGroup
-	defer func() { stop(); cancel(); wg.Wait() }()
+	// Ao sair, cancela e FECHA a conexao antes de esperar as goroutines: uma escrita bloqueada num Core
+	// parado so destrava com a conexao fechada.
+	defer func() { cancel(); _ = nc.Close(); wg.Wait() }()
 	wg.Add(2)
 	go func() { defer wg.Done(); c.statusLoop(sctx, w, interval) }()
 	go func() { defer wg.Done(); b.Emit(sctx, &sink{c: c, w: w}) }()
