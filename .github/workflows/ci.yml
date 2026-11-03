@@ -49,10 +49,11 @@ jobs:
       - run: make build
   e2e:
     # Contra um Core de verdade: o modulo conecta, a regra generic.burst dispara e a TUI o mostra.
-    # CORE_REF e a versao do Core contra a qual o exemplo e testado.
+    # CORE_REF e a versao do Core contra a qual o exemplo e testado; suba-a de proposito, ao validar o
+    # exemplo com uma versao nova (um commit novo na main do Core nao deve quebrar este CI).
     runs-on: ubuntu-latest
     env:
-      CORE_REF: main
+      CORE_REF: v0.13.0
     steps:
       - uses: actions/checkout@v7
         with: { path: mod-example }
